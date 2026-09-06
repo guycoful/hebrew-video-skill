@@ -32,3 +32,27 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
 
 ## Hebrew stress (4.9.2026)
 `eleven_v3` places stress on the last syllable of any Hebrew-script word and ignores nikud, hyphens, meteg and spacing for stress purposes (six spellings of בלוגים tested, all ba-lo-GIM). Loanwords that Israelis stress penultimately must be written in Latin script inside the Hebrew line ("בקבצי ה-log"), which is also what the caption shows. Nikud never reaches the screen: map it away in `display`. Scribe QA cannot catch stress errors because it strips nikud and returns consonants only — send the user an mp3 instead.
+
+## Vertical Shorts / Reels & Advanced Hebrew Synchronization (6.9.2026)
+
+### 1. Pronunciation Stability and The "ערכה" Rule
+- **Ambiguous Hebrew words break TTS:** Words without explicit vowels can fail silently or with wrong vowels and incorrect stress. For example, "ערכה" is frequently misread as "ARAKA" or stressed on the first syllable like English ("ÉR-ka") instead of Israeli Hebrew milra ("er-KÁ").
+- **Do not fight the model with endless phonetic hacks:** Attempting to force stress with hyphens or question marks ("הער-כָּה ?") can introduce unnatural acoustic pauses or plosive bursts.
+- **The Golden Replacement Rule:** If a Hebrew word fails in TTS or creates pronunciation ambiguity, **replace it immediately with an unambiguous synonym**. Changing "רוצים את הערכה המלאה ?" ל-"רוצים את החבילה המלאה ?" פתר את הבעיה בטייק ראשון בצליל טבעי וללא עמימות.
+- **Loanwords and dagesh:** Loanwords like "טלפרומפטר" must be checked to ensure the Pe is pronounced hard (P, not F). If needed, write "טלפרומפטר" with dagesh or phonetically.
+- **Never simulate organic human groans/snores:** Never attempt to generate snore sounds, grunts or sighing noises ("אה אה אה") via TTS. It sounds distorted, uncanny and grotesque. Keep the voice clean, articulate and professional, and let royalty-free fairy-tale background music and crisp UI sound effects (ping, sparkle, whoosh) tell the story.
+
+### 2. Subtitle Synchronization and Dynamic Badge Design
+- **Verbatim accuracy is non-negotiable:** Viewers read and listen simultaneously. Dropping even a single connective word (like "ללכת", "מהחיים", "בינה מלאכותית", "ממני") creates an immediate feeling of desynchronization.
+- **Always extract centisecond word timestamps with Whisper:** Never estimate subtitle start and end times by ear. Run `faster-whisper` with `word_timestamps=True` directly on the final mixed/spliced audio.
+- **Dynamic badge timing:** The visual highlight badge (yellow `#facc15` or cyan `#38bdf8`) must trigger at the exact millisecond the spoken word begins.
+- **Word chunk density:** Limit subtitle chunks to 2 to 4 words per view. Long sentences clutter the screen and look like outdated corporate slides.
+- **Typography:** Use **Heebo Black** (`font-weight: 900`, -0.5px letter-spacing). Never use default serif fonts or Segoe UI for social media reels.
+- **Safe zones (9:16):**
+  - General vertical dialogue: `bottom: 810px` (chest height) avoids both Instagram/TikTok bottom UI and top headers.
+  - Scene-specific exceptions: If foreground subjects (e.g. dogs, laptops, desks) occupy the lower center, elevate the caption box to `bottom: 1020px` to prevent occlusion.
+
+### 3. Vertical Video Engineering and Timing Budget
+- **Duration limit:** Instagram Reels and YouTube Shorts strictly require < 60.00s. Target 58.5s to 59.5s (e.g. 59.36s). Anything beyond 60.00s breaks shorts categorization on platforms.
+- **Avoid AI face distortion:** When animating static illustrated characters, AI video generators often distort facial features or morph eyes unnaturally across cuts. Keep characters in their original clean keyframe state or use controlled subtle cinematic pans/zooms (lerp + ease-in-out).
+- **Audio mixing standards:** Master voiceover leveled to -14 LUFS, background music ducked to 0.08 with lowpass filter at 4500Hz to preserve voice intelligibility, and SFX aligned to millisecond cue marks.
