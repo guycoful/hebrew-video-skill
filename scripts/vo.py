@@ -68,7 +68,8 @@ def chunks_for(al):
             if merged and len(ch["text"]) < 14 and len(merged[-1]["text"]) + len(ch["text"]) <= MAXC:
                 merged[-1]["text"] += " " + ch["text"]; merged[-1]["end"] = ch["end"]
             elif ch["text"]: merged.append(ch)
-    for ch in merged: ch["text"] = display(ch["text"])
+    # a caption line never ends on a dangling comma — the sentence continues on the next line
+    for ch in merged: ch["text"] = display(ch["text"].rstrip().rstrip(",").rstrip())
     return merged
 
 os.makedirs("assets/vo", exist_ok=True)

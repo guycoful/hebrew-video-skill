@@ -29,3 +29,6 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
   2. Never use aggressive sidechain ducking pump on cuts.
   3. Never choose dark industrial, dissonant, horror, or noisy tracks (like `REACTOR` with screeching at 00:40). Management finds them scary and intolerable ("רעש נוראי ומפחיד, מזוויע ב-00:40").
   4. Never use quiet elevator/piano music (`bed1` at 0.35 gain) when a punchy/kicking cut is requested.
+
+## Hebrew stress (4.9.2026)
+`eleven_v3` places stress on the last syllable of any Hebrew-script word and ignores nikud, hyphens, meteg and spacing for stress purposes (six spellings of בלוגים tested, all ba-lo-GIM). Loanwords that Israelis stress penultimately must be written in Latin script inside the Hebrew line ("בקבצי ה-log"), which is also what the caption shows. Nikud never reaches the screen: map it away in `display`. Scribe QA cannot catch stress errors because it strips nikud and returns consonants only — send the user an mp3 instead.
