@@ -6,7 +6,7 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
 ## ElevenLabs facts
 - `eleven_v3` is the only model listing Hebrew; it accepts `/with-timestamps`, so character timing for captions works.
 - `eleven_multilingual_v2` speaks Hebrew unofficially but Guy rejected it as robotic.
-- **PVC does not support Hebrew** (39 languages, none Hebrew) and trains only on Flash/Turbo/Multilingual v2; `eleven_v3` has `can_be_finetuned: false`. `POST /voices/pvc/{id}/train` answers `{"status":"ok"}` yet `fine_tuning.state` stays `{}` forever. Voice `ma6RJ8S3AeaumgehntdT` ("Guy Cohen HE PVC") exists but is unusable.
+- **PVC does not support Hebrew** (39 languages, none Hebrew) and trains only on Flash/Turbo/Multilingual v2; `eleven_v3` has `can_be_finetuned: false`. `POST /voices/pvc/{id}/train` answers `{"status":"ok"}` yet `fine_tuning.state` stays `{}` forever. Voice `ma6RJ8S3AeaumgehntdT` ("Guy Cohen HE PVC") was deleted and recreated on 4.9.2026 as `WZgqJaSYXQ2OtBWkc1zJ`; Guy wants it kept. The UI shows "not fine-tuned … instabilities" — expected for Hebrew. Do not delete account voices without asking.
 - Instant clones from Guy's 32-min studio take: `jUf6zBvAkDrBllNnevJJ` (3-min slice), **`ND8JTbPy2RGiXF2rpt6p` (4×2.5-min slices) — chosen**. Older one-sample clones `pEC1hVCB2mYHhaaS3B9A` / `cJ6GWxLpNcAblrtC1aVv` are worse (D-style stability 1.0 distorts; the "Guy Voice" clone stresses רובוט on the wrong syllable).
 - `eleven_multilingual_v2 + style 0.2 + speed 0.95` was the robotic combination; plain `stability 0.5 / similarity 0.75` on v3 won the A/B.
 - Output `mp3_44100_192`, then transcode to 48 kHz stereo WAV for ffmpeg mixing (`amix normalize=0`).
@@ -20,3 +20,12 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
 
 ## Numbers that recur in Valor copy
 21,876 runs / 90 days · 103 tracked processes · 34 with a clear rhythm · 3 machines · 59 % busiest · checks every 5 minutes · 17d 19h stuck job vs 1m 38s typical.
+
+## Punch / High-Impact Editions (Lessons learned 6.9.2026, Manager sign-off)
+- **Visuals**: Posters, big bold numbers (140-210px), dark cyber grid, 3-5 words per shot, zero micro-dashboard clutter. Legible from 10m away.
+- **Audio DOs**: Use conventional, driving, upbeat corporate tech music (128-138 BPM, e.g. `Presenterator`, `Shiny Tech`). Master at ~ -13.4 LUFS. Continuous flow across all 60s.
+- **Audio DONTs (Firm rule from management)**:
+  1. Never add artificial explosion/sub-bass boom SFX (`sub_landing.wav`) between transitions every 4 seconds. Management finds them jarring, exaggerated, and cheap ("בומים מוגזמים ולא יפים").
+  2. Never use aggressive sidechain ducking pump on cuts.
+  3. Never choose dark industrial, dissonant, horror, or noisy tracks (like `REACTOR` with screeching at 00:40). Management finds them scary and intolerable ("רעש נוראי ומפחיד, מזוויע ב-00:40").
+  4. Never use quiet elevator/piano music (`bed1` at 0.35 gain) when a punchy/kicking cut is requested.

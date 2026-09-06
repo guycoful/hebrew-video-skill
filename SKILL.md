@@ -19,10 +19,10 @@ Everything runs from a **project folder** that holds `project.json`, `assets/`, 
 
 1. `mkdir C:\Users\Valor\Videos\<Project>\assets` and copy in: the screen recording, `valor-logo-white.png`, `robot.png` (both in `C:\Users\Valor\Videos\ValorControlCenter\assets\` — reuse).
 2. Copy `templates/project.json` from this skill into the project folder and edit: narration lines, scene list (source seconds in the recording), chip labels, card texts, blur boxes.
-3. Clean the footage: `python <skill>/scripts/clean_footage.py` (reads `project.json → footage_clean`). Verify with the probe frames it writes to `assets/probe_*.png`.
-4. Voice: `python <skill>/scripts/vo.py` → `assets/vo/vo<N>.wav` + `vo.json` (caption chunks with character-level timing). Only missing segments are regenerated, so editing one line re-voices one line — delete `assets/vo/vo<N>.*` to force.
-4b. **Pronunciation QA (mandatory):** `python <skill>/scripts/qa_vo.py` transcribes every segment with ElevenLabs Scribe and diffs it against the narration. Fix repeat offenders by respelling the *spoken* text and mapping it back in `display`, then delete that segment's `assets/vo/vo<N>.*` and rerun `vo.py`. Send the user the mp3 of any segment you are unsure about; only they can judge.
-5. Render: `python <skill>/scripts/render.py` → `out/<name>.mp4`. Then QC: `ffmpeg -i out/x.mp4 -vf "select='eq(n,150)+eq(n,900)+eq(n,3000)',scale=640:-1,tile=3x1" -frames:v 1 out/qc.jpg` and look at it.
+3. Clean the footage: `python ~/.claude/skills/hebrew-video/scripts/clean_footage.py` (reads `project.json → footage_clean`). Verify with the probe frames it writes to `assets/probe_*.png`.
+4. Voice: `python ~/.claude/skills/hebrew-video/scripts/vo.py` → `assets/vo/vo<N>.wav` + `vo.json` (caption chunks with character-level timing). Only missing segments are regenerated, so editing one line re-voices one line — delete `assets/vo/vo<N>.*` to force.
+4b. **Pronunciation QA (mandatory):** `python ~/.claude/skills/hebrew-video/scripts/qa_vo.py` transcribes every segment with ElevenLabs Scribe and diffs it against the narration. Fix repeat offenders by respelling the *spoken* text and mapping it back in `display`, then delete that segment's `assets/vo/vo<N>.*` and rerun `vo.py`. Send the user the mp3 of any segment you are unsure about; only they can judge.
+5. Render: `python ~/.claude/skills/hebrew-video/scripts/render.py` → `out/<name>.mp4`. Then QC: `ffmpeg -i out/x.mp4 -vf "select='eq(n,150)+eq(n,900)+eq(n,3000)',scale=640:-1,tile=3x1" -frames:v 1 out/qc.jpg` and look at it.
 6. Send the MP4 with SendUserFile (uploads over ~10 MB sometimes time out to phone; the desktop copy still works) and mirror to OneDrive.
 
 ## Narration and caption conventions Guy signed off on
@@ -31,13 +31,28 @@ Everything runs from a **project folder** that holds `project.json`, `assets/`, 
 - One caption = **one line** (≤50 chars at 54 px). The splitter prefers commas, never breaks inside a Latin phrase (keeps "Valor Automation Control Center") and never before a ו-word (keeps "דקה וחצי").
 - Captions run continuously, including over the title and closing cards, at `bottom:110px` so the player bar never covers them. Wrap every RTL overlay in U+200F on both ends so trailing punctuation sits on the right.
 - Chips (top-right capability labels) are benefit-phrased ("יודעים על תהליך שלא רץ – לפני הלקוח"), appear 0.3 s into the scene and stay **exactly 4 s** so they never hide the app's top toolbar.
-- **Fixed spellings, always (Guy's ruling):** speak **"וָואלוֹר"** (kamatz on the א, full holam after the ל, stress on the second syllable) → show `Valor`; speak **"יוּ אַיי פַּאף"** → show `UiPath`. Never write `Valor` or `UiPath` in the spoken text — the model breaks on them every time. Use these exact nikud strings in every project; speak "שבעה-עשר" (hyphen) not "שבעה עשר"; avoid "ניצולת" (unstable) → "ניצול הרובוטים"; avoid "קיבולת" → "מקום פנוי". Keep "See. Control. Optimize." spoken, shown as `See · Control · Optimize.`
-- Words the model mispronounces: say "מיום שני" not "משני", "התפספס" not "פוספס". Write numbers as words in the spoken text (שבעה עשר, בתשעים, בשלוש ושתים עשרה) and let `display` show digits.
+- **Fixed spellings, always (Guy's ruling):** speak **"וָואלוֹר"** (kamatz on the א, full holam after the ל, stress on the second syllable) → show `Valor`; speak **"UI Path"** (two English words, capital UI, a space — chosen by Guy from six A/B takes on 3.9.2026; nikud spellings like יוּ אַיי פַּאת'/פַּאף were NOT respected by the model) → show `UiPath`. Never write `Valor` or `UiPath` (one word) in the spoken text. Use these exact nikud strings in every project; speak "שבעה-עשר" (hyphen) not "שבעה עשר"; avoid "ניצולת" (unstable) → "ניצול הרובוטים"; avoid "קיבולת" → "מקום פנוי". **No full English sentences in the narration** (Guy: single terms are fine, sentences are not). Brochure slogans are spoken in Hebrew: "לראות. לשלוט. לייעל." and "הגיע הזמן לעבור מניהול אוטומציות באקסל, לתפעול חכם, נגיש ומקצועי." (Guy's wording, fixed) The three-word English tagline may stay on the title card only.
+- Words the model mispronounces: say "מיום שני" not "משני", "התפספס" not "פוספס", "פעלו" not "רצו" (it stresses רָצוּ like רצון), never "לחפור" (say "לחפש"). Write numbers as words in the spoken text (שבעה עשר, בתשעים, בשלוש ושתים עשרה) and let `display` show digits.
 - Product name on screen: **Valor Automation Control Center** (Gal's internal name "Run Rhythm" stays off-screen). Closing card: on-prem message, "תאמו שיחת הדגמה · 20 דקות", the contact line from project.json → cards.close.contact.
 
 ## Footage cleaning
 
 `clean_footage.py` crops the browser chrome (`crop=1920:946:0:85` for a 1920×1032 capture) so the URL bar never shows a client domain, scales to the 1760×868 stage, and applies time-boxed `boxblur` rectangles over client names (chroma radius must be < 7 or ffmpeg errors). Find coordinates by extracting a frame at the right second and reading pixel positions; the blur boxes are `[x, y, w, h, t_from, t_to]` in *cropped* coordinates.
+
+## Silent conference loop (`render_loop.py`, added 6.9.2026)
+
+`python ~/.claude/skills/hebrew-video/scripts/render_loop.py` renders a no-narration loop from `project.json → timeline` (items: `kind: shot|close|contact`, `src` second, `dur`, `text` = one big 96 px line, 3–5 words). First and last `black_seconds` are pure black so the loop closes; `--vo` adds the `narration_at` lines (ElevenLabs, same voice) and writes `output_vo`. The contact card draws a QR from `cards.contact.qr_url` (`pip install qrcode`). Reference project: `C:\Users\Valor\Videos\ValorConference` (60 s, 13 items, renders in ~70 s).
+
+## High-impact "Punch" conference loops (`render_punch_loop.py`, added 6.9.2026)
+
+When the user asks for a punchy / kicking version ("גרסה בועטת ומגרה"):
+1. **Visuals**: Minimalist, bold, poster-style typography (140px–210px), big glowing numbers (`103`, `?`, `14:00`, `EXCEL! באמת?!`, flatline EKG bar, `17 ימים`, `100%`, `05:00`), dark cyber-grid with subtle ambient glow orbs. Less small dashboard clutter, much higher legibility from 10 meters away.
+2. **Music**: Upbeat, driving, positive, conventional corporate tech / electro-pop (128–138 BPM, e.g. `Presenterator` or `Shiny Tech`). The music must drive continuously at ~ -13 LUFS across the full 60 seconds.
+3. **STRICT RULES — What to AVOID AT ALL COSTS (Learned 6.9.2026, Management sign-off)**:
+   - ❌ **NO artificial explosion / sub-bass "boom" SFX on transitions** (`sub_landing.wav`, impact bass drops every 4 seconds). They sound exaggerated, cheap, jarring, and unpleasing to management.
+   - ❌ **NO aggressive sidechain ducking pump** on video cuts that sucks the music in and out.
+   - ❌ **NO dark, scary, dissonant, horror, or noisy industrial tracks** (like `REACTOR` with metallic screeches or weird breakdowns at 00:40). Management finds this "רעש נוראי ומפחיד".
+   - ❌ **NO quiet elevator/piano music** (`bed1` at 0.35 gain) that whispers in the background.
 
 ## Editing an existing video
 
