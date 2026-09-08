@@ -1,19 +1,19 @@
-# Lessons behind the pipeline (3.9.2026, Control Center client video)
+# Lessons behind the pipeline (Control Center client video & Social Reels Studio)
 
 ## Why not HyperFrames
-Three wipes in one day, each right after a `hyperframes render` failed/was stopped or `skills update` ran: the project folder, then all of `outputs/valor` (brief, rough cuts, keys, VO, user uploads), then the project again **plus a backup folder two levels up**. Nothing in the Recycle Bin. Also: its bundled chrome-headless-shell is blocked on this PC ("spawn UNKNOWN"; direct exec = Permission denied) and it needs `HYPERFRAMES_BROWSER_PATH` pointed at system Chrome. Banned.
+Three wipes in one day, each right after a `hyperframes render` failed/was stopped or `skills update` ran: the project folder, then all of `outputs/valor` (brief, rough cuts, keys, VO, user uploads), then the project again plus a backup folder two levels up. Nothing in the Recycle Bin. Also: its bundled chrome-headless-shell is blocked on this PC ("spawn UNKNOWN"; direct exec = Permission denied) and it needs `HYPERFRAMES_BROWSER_PATH` pointed at system Chrome. Banned.
 
 ## ElevenLabs facts
 - `eleven_v3` is the only model listing Hebrew; it accepts `/with-timestamps`, so character timing for captions works.
 - `eleven_multilingual_v2` speaks Hebrew unofficially but Guy rejected it as robotic.
-- **PVC does not support Hebrew** (39 languages, none Hebrew) and trains only on Flash/Turbo/Multilingual v2; `eleven_v3` has `can_be_finetuned: false`. `POST /voices/pvc/{id}/train` answers `{"status":"ok"}` yet `fine_tuning.state` stays `{}` forever. Voice `ma6RJ8S3AeaumgehntdT` ("Guy Cohen HE PVC") was deleted and recreated on 4.9.2026 as `WZgqJaSYXQ2OtBWkc1zJ`; Guy wants it kept. The UI shows "not fine-tuned … instabilities" — expected for Hebrew. Do not delete account voices without asking.
-- Instant clones from Guy's 32-min studio take: `jUf6zBvAkDrBllNnevJJ` (3-min slice), **`ND8JTbPy2RGiXF2rpt6p` (4×2.5-min slices) — chosen**. Older one-sample clones `pEC1hVCB2mYHhaaS3B9A` / `cJ6GWxLpNcAblrtC1aVv` are worse (D-style stability 1.0 distorts; the "Guy Voice" clone stresses רובוט on the wrong syllable).
+- **PVC does not support Hebrew** (39 languages, none Hebrew) and trains only on Flash/Turbo/Multilingual v2; `eleven_v3` has `can_be_finetuned: false`. `POST /voices/pvc/{id}/train` answers `{"status":"ok"}` yet `fine_tuning.state` stays `{}` forever. Voice `ma6RJ8S3AeaumgehntdT` ("Guy Cohen HE PVC") was deleted and recreated on 4.9.2026 as `WZgqJaSYXQ2OtBWkc1zJ`; Guy wants it kept. The UI shows "not fine-tuned … instabilities" (expected for Hebrew). Do not delete account voices without asking.
+- Instant clones from Guy's 32-min studio take: `jUf6zBvAkDrBllNnevJJ` (3-min slice), **`ND8JTbPy2RGiXF2rpt6p` (4×2.5-min slices) was chosen**. Older one-sample clones `pEC1hVCB2mYHhaaS3B9A` / `cJ6GWxLpNcAblrtC1aVv` are worse (D-style stability 1.0 distorts; the "Guy Voice" clone stresses רובוט on the wrong syllable).
 - `eleven_multilingual_v2 + style 0.2 + speed 0.95` was the robotic combination; plain `stability 0.5 / similarity 0.75` on v3 won the A/B.
 - Output `mp3_44100_192`, then transcode to 48 kHz stereo WAV for ffmpeg mixing (`amix normalize=0`).
 
 ## ffmpeg / Chrome details
 - This ffmpeg build rejects `-filter_complex_script`; use `-/filter_complex <file>`.
-- `boxblur=luma_r:luma_p:chroma_r:chroma_p` — chroma radius ≥ 7 fails on yuv420p.
+- `boxblur=luma_r:luma_p:chroma_r:chroma_p` (chroma radius ≥ 7 fails on yuv420p).
 - Overlays: `chrome.exe --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1920,1080 --default-background-color=00000000 --screenshot=<png> file:///…html` gives a true RGBA PNG; Segoe UI renders Hebrew correctly (in HyperFrames the same name was aliased to Roboto).
 - Each overlay is its own ffmpeg input with `-loop 1 -t <dur>`, `setpts=PTS-STARTPTS+<start>/TB`, `fade=t=in:alpha=1`, and `overlay=…:enable='between(t,a,b)'`. 60+ inputs render fine.
 - The user's own long PVC take: two m4a parts joined with `concat`, `pan=mono`, `highpass=f=70`, `volume=6dB` → peak −1.9 dB.
@@ -31,7 +31,9 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
   4. Never use quiet elevator/piano music (`bed1` at 0.35 gain) when a punchy/kicking cut is requested.
 
 ## Hebrew stress (4.9.2026)
-`eleven_v3` places stress on the last syllable of any Hebrew-script word and ignores nikud, hyphens, meteg and spacing for stress purposes (six spellings of בלוגים tested, all ba-lo-GIM). Loanwords that Israelis stress penultimately must be written in Latin script inside the Hebrew line ("בקבצי ה-log"), which is also what the caption shows. Nikud never reaches the screen: map it away in `display`. Scribe QA cannot catch stress errors because it strips nikud and returns consonants only — send the user an mp3 instead.
+`eleven_v3` places stress on the last syllable of any Hebrew-script word and ignores nikud, hyphens, meteg and spacing for stress purposes (six spellings of בלוגים tested, all ba-lo-GIM). Loanwords that Israelis stress penultimately must be written in Latin script inside the Hebrew line ("בקבצי ה-log"), which is also what the caption shows. Nikud never reaches the screen: map it away in `display`. Scribe QA cannot catch stress errors because it strips nikud and returns consonants only, so send the user an mp3 instead.
+
+---
 
 ## Vertical Shorts / Reels & Advanced Hebrew Synchronization (6.9.2026)
 
@@ -53,6 +55,49 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
   - Scene-specific exceptions: If foreground subjects (e.g. dogs, laptops, desks) occupy the lower center, elevate the caption box to `bottom: 1020px` to prevent occlusion.
 
 ### 3. Vertical Video Engineering and Timing Budget
-- **Duration limit:** Instagram Reels and YouTube Shorts strictly require < 60.00s. Target 58.5s to 59.5s (e.g. 59.36s). Anything beyond 60.00s breaks shorts categorization on platforms.
-- **Avoid AI face distortion:** When animating static illustrated characters, AI video generators often distort facial features or morph eyes unnaturally across cuts. Keep characters in their original clean keyframe state or use controlled subtle cinematic pans/zooms (lerp + ease-in-out).
+- **Duration limit:** Instagram Reels and YouTube Shorts strictly require < 60.00s. Target 50.0s to 58.5s (e.g. 52s או 58s). Anything at or beyond 60.00s breaks shorts categorization on platforms.
 - **Audio mixing standards:** Master voiceover leveled to -14 LUFS, background music ducked to 0.08 with lowpass filter at 4500Hz to preserve voice intelligibility, and SFX aligned to millisecond cue marks.
+
+---
+
+## Post-to-Reel Transformation: Lessons from The Studio Video (סרטון הסטודיו מפוסט לינקדאין)
+
+### 1. מלכודת התמונה הסטטית: מדוע זום ופאן אינם מספקים
+בגרסה הראשונית של סרטון הסטודיו נלקחה תמונת הפוסט הראשית, נגזרו ממנה קרופים, והוחלו תנועות מצלמה עדינות של זום ופאן (Ken-Burns) ב-OpenCV/PIL.
+התגובה הברורה מהמשתמש הייתה: **"צריך ממש אנימציה של התמונה ולא רק תמונה סטטית זהה עם כמה תנועות קטנות כמו שעשינו"**.
+תמונה סטטית עם תנועות עדינות מרגישה לצופה ברשתות כמו שקופית פאוורפוינט ולא כמו סרטון רילס מקצועי. ברגע שיש אלמנטים בתמונה (דמות ישנה, רובוט מקליד, מסכים מרצדים), הקהל מצפה לתנועה חיה ואורגנית.
+
+### 2. הפקת אנימציה גנרטיבית אמיתית (Image-to-Video Pipeline)
+כדי לייצר אנימציה אמיתית מהאיור של הפוסט:
+1. **גזירת קרופים אנכיים (9:16) ברזולוציה מקסימלית:** חותכים את התמונה הראשית לאזורי מיקוד (Focus Regions) לפי נושאי הסצנות (היוצר הישן, עמדת העבודה והרובוט, המסכים והטיים-ליין, ממשקי הטלפון).
+2. **הזנה למודלי וידאו מבוססי תמונה (I2V):** שימוש במודלים מתקדמים כמו Kling AI, MiniMax (Hailuo), Runway Gen-3, Luma Dream Machine, או Wan 2.1.
+3. **פרומפטי תנועה ייעודיים:**
+   - *דמות אנושית*: נשימה טבעית (heaving chest with subtle breathing cycle), מצמוץ עיניים טבעי, חיוך עדין, תנועת ראש קלה ושינויי תאורת סביבה.
+   - *רובוט ומחשבים*: זרוע רובוטית מכנית שמקלידה על מקלדת פיזית, מסכי עריכה שמרצדים ומציגים קוד רץ וגלי סאונד מונפשים, חלקיקי אבק באלומת אור.
+   - *המחשת תסכול/כאב*: דיבור נמרץ למצלמה, תנועת יד מתוסכלת, ריצוד נורת חיווי אדומה כשהמיקרופון כבוי.
+
+### 3. נוסחת לופ פינג-פונג (Ping-Pong Loop) להארכת תנועה רציפה
+מודלי וידאו גנרטיביים מייצרים בדרך כלל 4 עד 5 שניות של וידאו, בעוד שביט בתסריט נמשך 7 עד 12 שניות. הקפאת הפריים בסוף הופכת את הווידאו לסטטי, וחיתוך חד לקובץ חדש יוצר קפיצה לא נעימה.
+הפתרון הוא לופ פינג-פונג (קדימה ואחורה) מובנה ב-Python:
+```python
+def get_pingpong_frame(frame_index, total_source_frames):
+    cycle = frame_index % (2 * (total_source_frames - 1))
+    return cycle if cycle < total_source_frames else 2 * (total_source_frames - 1) - cycle
+```
+לופ זה מבטיח תנועה רציפה, חלקה וללא קפיצות לכל אורך הסצנה.
+
+### 4. אלגוריתם נצנוץ כוכב יהלום (Diamond Sparkle Glint)
+ברגעים של הישג, פריצת דרך, או קריאה לפעולה (CTA), אלמנט ויזואלי של כוכב מנצנץ מוסיף תחושת פרימיום.
+במקום להדביק גיף שקוף, מופעל אלגוריתם שמשתמש בפוליגון יהלום וקרינה רדיאלית:
+- פוליגון יהלום מרכזי (Diamond polygon) בלבן בוהק.
+- זוהר רדיאלי רך (Soft radial glow) בגוון צהוב עדין (`255, 250, 220`).
+- קרניים אלכסוניות קצרות וליבה מרכזית בוהקת.
+- פונקציית מעבר סינוסית עולה ויורדת לפי התקדמות הזמן (progress 0.0 עד 1.0).
+
+### 5. מבנה תסריט 6 הביטים מפוסט לריל (6-Beat Retention Blueprint)
+- **סצנה 1 (0-8s):** הוק ותוצאה חלומית (יקיצה טבעית, 7 שעות שינה, אוטומציה שמצילה את המצב).
+- **סצנה 2 (8-18s):** הכאב המשותף (שעתיים שהולכות לפח, 6 טייקים, מיקרופון כבוי).
+- **סצנה 3 (18-29s):** נקודת השבירה (ישיבה מול תוכנת עריכה באמצע הלילה, החלטה לבנות פתרון).
+- **סצנה 4 (29-38s):** מנוע הפתרון (איחוד יכולות לתוך חבילה אחת, ריל שלם בפקודה אחת).
+- **סצנה 5 (38-50s):** הוכחה והדגמת מנגנון (טלפרומפטר, סלפי, כתוביות אוטומטיות, חיתוך שקט, דיבוב ElevenLabs).
+- **סצנה 6 (50-58s):** קריאה לפעולה חברתית (כתבו "סטודיו" בתגובות ואשלח לכם הכל).

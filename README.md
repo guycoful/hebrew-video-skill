@@ -1,14 +1,14 @@
 # Hebrew Video Skill
 
-Turn a screen recording into a finished Hebrew product video: cleaned footage, narration in your own cloned voice, one-line RTL captions synced to the speech, benefit chips, branded title / stats / closing cards. One `project.json`, three scripts, ffmpeg + headless Chrome. No video editor, no cloud renderer.
+הפקת סרטוני מוצר ושיווק מקצועיים בעברית: הן סרטוני הדגמה ללקוחות ביחס 16:9 (Desktop demo/B2B walkthrough) והן סרטוני רילס ושורטס אנכיים ביחס 9:16 (Instagram Reels, YouTube Shorts, TikTok), כולל הפיכת פוסטים ברשתות (LinkedIn, Facebook) לסרטוני ריל מונפשים עם דיבוב ואנימציית וידאו גנרטיבית (Image-to-Video).
 
-Built for Claude Code by Guy Cohen. Brand, voice, contacts and footage are all configuration, so the same skill produces videos for any product or client.
+נבנה עבור Claude Code / Antigravity על ידי גיא כהן. המיתוג, הקול, אנשי הקשר וחומרי הגלם מוגדרים כולם בקונפיגורציה, כך שאותו סקיל מפיק סרטונים עבור כל מוצר, לקוח או פוסט ברשתות.
 
 ---
 
 ## למה זה קיים
 
-סרטון מוצר בעברית עם קריינות משובטת נשמע כמו פרויקט של יום. בפועל נפלתי בשמונה מלכודות, ורובן נכשלות בשקט.
+סרטון בעברית עם קריינות משובטת ואנימציה נשמע כמו פרויקט של יום שלם. בפועל נפלנו במלכודות רבות, שרובן נכשלות בשקט.
 
 | המלכודת | מה קורה | הפתרון בסקיל |
 |---|---|---|
@@ -23,8 +23,9 @@ Built for Claude Code by Guy Cohen. Brand, voice, contacts and footage are all c
 | **מילים עם עמימות ניקוד/הטעמה ב-TTS** | מילים כמו "ערכה" נקראות כ-ARAKA או בהטעמה אנגלית במלעיל | החלפה מידית למילה נרדפת ללא עמימות ("חבילה"), שמייצרת הגייה טבעית בטייק ראשון |
 | **סנכרון כתוביות רופף או השמטת מילים** | השמטת מילות קישור ("ללכת", "ממני") יוצרת תחושת דיסאוריינטציה | תמלול כתוביות מדויק 100% מילה במילה באמצעות חילוץ זמנים ב-Whisper |
 | **עיצוב כתוביות מיושן לסושיאל** | פונט ברירת מחדל נראה משרדי ולא מתאים לרילס | פונט Heebo Black ותגיות הדגשה מעוגלות בצהוב וטורקיז שקופצות בדיוק כשהמילה נאמרת |
-| **חריגה מ-60 שניות ברילס/שורטס** | סרטון מעל 60 שניות נחתך או נפסל מלופים של שורטס | בקרת זמנים קפדנית ל-58 עד 59 שניות |
+| **חריגה מ-60 שניות ברילס/שורטס** | סרטון מעל 60 שניות נחתך או נפסל מלופים של שורטס | בקרת זמנים קפדנית ל-50 עד 58 שניות |
 | **רעשי גניחה/נחירות מלאכותיים** | ניסיונות לייצר קולות נחירה או אנחות ב-TTS נשמעים מעוותים | קריינות נקייה ורהוטה על גבי מוזיקת רקע אווירתית ואפקטים קוליים מתוזמנים (UI SFX) |
+| **תמונה סטטית עם פאן/זום בלבד** | סרטון פוסט עם קרופ סטטי ותנועות קלות נתפס כמצגת משעממת והצופים נוטשים | אנימציית וידאו גנרטיבית אמיתית (Image-to-Video ב-Kling/MiniMax) עם לופ פינג-פונג רציף |
 
 ---
 
@@ -40,6 +41,7 @@ git clone https://github.com/guycoful/hebrew-video-skill ~/.claude/skills/hebrew
 
 ## שימוש
 
+### אופציה 1: סרטון מוצר או דמו לקוח (16:9 Landscape)
 ```bash
 # 1. תיקיית פרויקט עם assets/: הקלטת המסך, לוגו לבן על שקוף, תמונת מסקוט (רשות)
 # 2. מעתיקים את templates/project.json ועורכים: קריינות, סצנות (שניות במקור), תגיות, כרטיסים, תיבות טשטוש
@@ -49,22 +51,27 @@ python ~/.claude/skills/hebrew-video/scripts/qa_vo.py           # תמלול ח�
 python ~/.claude/skills/hebrew-video/scripts/render.py          # out/<name>.mp4
 ```
 
-שינוי משפט אחד: עורכים אותו ב‑`narration`, מוחקים את `assets/vo/vo<N>.*`, ומריצים `vo.py` ואז `render.py`. רק הקטע הזה מוקלט מחדש.
-
-הקלטה אמיתית במקום TTS: שמים `assets/vo-real/vo<N>.wav` והסקריפט מעדיף אותה אוטומטית.
+### אופציה 2: פוסט ברשתות לסרטון ריל מונפש (9:16 Vertical Reel)
+1. קליטת הפוסט: טקסט הפוסט ותמונה ראשית (LinkedIn, Instagram, Facebook).
+2. עיבוד תסריט 6 ביטים ממוקד: הוק, כאב מהעבר, נקודת מפנה, מנוע האוטומציה, הוכחה והדגמה, והנעה לתגובות (CTA).
+3. אנימציה גנרטיבית (Image-to-Video): גזירת קרופים אנכיים ברזולוציה מקסימלית, הפקת וידאו חי ב-Kling / MiniMax עם פרומפטי תנועה אורגניים (נשימה, הקלדה, מסכים זוהרים), והחלת לופ פינג-פונג.
+4. דיבוב משובט ב-ElevenLabs (`eleven_v3`, קול IVC10 של גיא) עם סנכרון Whisper מילה במילה.
+5. כתוביות Heebo Black ותגיות הדגשה פיל בצהוב/טורקיז.
+6. מאסטרינג סאונד: מוזיקת רקע מונמכת ב-lowpass 4500Hz, אפקטי סאונד מתוזמנים ונרמול ל- -14 LUFS.
 
 ---
 
 ## מבנה
 
 ```
-SKILL.md                  ההוראות ל‑Claude Code: כללים, סדר עבודה, מוסכמות כתוביות
+SKILL.md                  ההוראות ל‑Claude Code: כללים, סדר עבודה, מוסכמות כתוביות ומודלי הפקה
 templates/project.json    פרויקט מלא לדוגמה (סרטון לקוח של 2:16)
 scripts/clean_footage.py  crop + boxblur מתוזמן + scale
 scripts/vo.py             ElevenLabs eleven_v3 עם with-timestamps, חיתוך כתוביות לשורה אחת
 scripts/qa_vo.py          תמלול חוזר (Scribe) מול התסריט
 scripts/render.py         שכבות HTML → PNG ב‑Chrome headless → גרף ffmpeg אחד
-reference/lessons.md      יומן התקלות: מה נכשל, למה, ומה עובד
+scripts/animations.py     אלגוריתמי תנועה, לופ פינג-פונג, ניצוץ יהלום ועיבוד פריימים
+reference/lessons.md      יומן התקלות: מה נכשל, למה, ומה עובד (כולל מקרה בוחן סרטון הסטודיו)
 ```
 
 ---

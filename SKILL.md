@@ -1,6 +1,6 @@
 ---
 name: hebrew-video
-description: Produce high-conversion Hebrew marketing and product videos in both 16:9 landscape (desktop demo/client walkthrough) and 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) formats. Features cleaned footage or AI visual scenes, Hebrew voiceover in Guy's cloned voice (ElevenLabs eleven_v3, voice IVC10), centisecond-accurate RTL captions with dynamic word badges, and audio mixing with background music and SFX. Rendered via headless Chrome overlays and ffmpeg. Use for any "סרטון", "וידאו", "רילס", "שורטס", "קריינות", "כתוביות", "דיבוב", client demo, or automated video studio. Never use HyperFrames on this machine.
+description: Produce high-conversion Hebrew marketing, social, and product videos in both 16:9 landscape (desktop demo/client walkthrough) and 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) formats. Transforms social media posts (LinkedIn, Facebook, Instagram) into fully voiced, AI-animated vertical reels with generative Image-to-Video motion, Hebrew voiceover in Guy's cloned voice (ElevenLabs eleven_v3, voice IVC10), centisecond-accurate RTL captions with dynamic word badges, and audio mixing with background music and SFX. Rendered via headless Chrome overlays and ffmpeg. Use for any "סרטון", "וידאו", "רילס", "שורטס", "קריינות", "כתוביות", "דיבוב", "פוסט לסרטון", "סרטון מפוסט", client demo, or automated video studio. Never use HyperFrames on this machine.
 ---
 
 # Hebrew Video Production Pipeline (16:9 Landscape & 9:16 Vertical Shorts)
@@ -10,7 +10,7 @@ Everything runs from a **project folder** that holds configuration, `assets/`, `
 ## Hard Rules & Production Safeguards
 
 1. **Never run `npx hyperframes …` on this PC:** HyperFrames commands wiped directories. This independent Chrome + ffmpeg pipeline replaces it completely.
-2. **Platform Duration Budget (< 60.00s for Shorts/Reels):** Vertical videos must strictly remain below 60.00 seconds (ideal target: 58.5s to 59.5s). Any duration at or over 60.00s breaks short-form categorization and video loops.
+2. **Platform Duration Budget (< 60.00s for Shorts/Reels):** Vertical videos must strictly remain below 60.00 seconds (ideal target: 50.0s to 58.5s). Any duration at or over 60.00s breaks short-form categorization and video loops.
 3. **Pronunciation Golden Rule (Zero Ambiguity):**
    - Hebrew words with vowel ambiguity (e.g. "ערכה" which TTS mispronounces as "ARAKA" or with penultimate English stress "ÉR-ka") must **not** be fought with endless acoustic hacks.
    - **Immediately substitute ambiguous words with clean, unambiguous synonyms** (e.g. replace "ערכה" with "חבילה").
@@ -40,7 +40,6 @@ Everything runs from a **project folder** that holds configuration, `assets/`, `
 ### 2. Visual Animation & Camera Flow
 - Divide video into 5 to 6 distinct visual scenes (7 to 12 seconds each).
 - When animating static illustrations, avoid aggressive AI morphing that distorts human faces or eyes.
-- Use controlled camera zooms and pans (lerp with cubic ease-in-out) in Python (PIL / OpenCV) to create smooth, high-end motion.
 - Special visual cues (e.g. eye sparkle flare, graphic badges) must be placed at exact cue times.
 
 ### 3. Audio Mastering
@@ -86,17 +85,99 @@ Everything runs from a **project folder** that holds configuration, `assets/`, `
 
 ---
 
+## Mode 4: Social Post to Animated Reel (פוסט לסרטון ריל מונפש עם דיבוב)
+
+מודל זה ממיר פוסט קיים (תמונה וטקסט מלינקדאין, פייסבוק או אינסטגרם) לסרטון רילס אנכי (9:16) מרהיב, הכולל דיבוב משובט, אנימציית וידאו אמיתית (Image-to-Video), כתוביות קינטיות ומאסטרינג אודיו מלא.
+
+### 1. חוק ברזל: אנימציה גנרטיבית אמיתית (איסור על תמונות סטטיות עם פאן/זום בלבד)
+- **הלקח המרכזי מסרטון הסטודיו:** תמונה סטטית עם תנועות פאן/זום עדינות (Ken-Burns) מרגישה כמו מצגת שקופיות מיושנת. הצופה מזהה תוך שנייה שמדובר בתמונה קפואה והמעורבות צונחת.
+- **חובה לייצר אנימציית וידאו אמיתית (Real Image-to-Video Motion):**
+  - גזירת קרופים אנכיים (9:16) ברזולוציה גבוהה מתוך תמונת הפוסט הראשית בהתאם לנושא של כל סצנה.
+  - הנפשת כל סצנה באמצעות מודלי וידאו גנרטיביים מובילים (Kling AI, MiniMax Hailuo, Runway Gen-3 Alpha, Luma Dream Machine, Sora, Wan 2.1).
+  - פרומפטי תנועה ייעודיים לכל סצנה:
+    - *דמות אנושית/יוצר*: נשימה טבעית (heaving chest), מצמוצי עיניים, חיוך עדין, תנועות ראש קלות, שינויי תאורת סביבה.
+    - *סביבת עבודה ורובוט*: זרוע מכנית שמקלידה על מקלדת פיזית, מסכים מרצדים עם קוד שרץ וגלי סאונד מונפשים, חלקיקי אבק באלומת אור.
+    - *ממשקים ומסכים*: חלונות צפים שמתעדכנים, גרפים קופצים, אלמנטים גרפיים מונפשים.
+- **טכניקת לופ פינג-פונג (Ping-Pong Loop) להארכת סצנה:**
+  - מודלי I2V מייצרים בדרך כלל 4 עד 5 שניות וידאו, בעוד ביט בתסריט נמשך 7 עד 12 שניות.
+  - משתמשים בלופ פינג-פונג רציף (`cycle if cycle < n_frames else 2*(n_frames - 1) - cycle`) כדי שהסצנה תישאר בתנועה חיה וזורמת לכל אורך הקריינות, ללא קפיצות וללא פריים קפוא.
+
+### 2. שלד תסריט 6 הביטים (The 6-Beat Narrative Framework)
+עיבוד טקסט הפוסט לתסריט וידאו אנכי קצבי באורך 50 עד 58 שניות (< 60.00 שניות בסך הכל):
+1. **ביט 1 (00:00 - 00:08) | הוק והתוצאה המושלמת (Hook & Dream):**
+   - תוצאה מעוררת השראה או היפוך ציפיות (לדוגמה: "חזרתי ליקיצה טבעית ולשבע שעות שינה, והכל בזכות סוכן בינה מלאכותית שמייצר לי סרטונים וחוסך לי את הטרחה.").
+2. **ביט 2 (00:08 - 00:18) | הכאב והתסכול מהעבר (The Relatable Struggle):**
+   - המחשת נקודת השפל שהקהל מזדהה איתה (לדוגמה: "פעם, כל סרטון שאב לי שעתיים מהחיים. הייתי מצלם שישה טייקים, מדבר למצלמה חצי שעה ברצף, נותן את הופעת חיי, ורק בסוף מגלה שהמיקרופון היה כבוי !").
+3. **ביט 3 (00:18 - 00:29) | נקודת המפנה וההחלטה (The Turning Point / Breakthrough):**
+   - הרגע שבו נמאס והוחלט לפעול (לדוגמה: "במקום ללכת לישון כמו בן אדם, ישבתי מול תוכנת העריכה. סנכרון כתוביות, חיתוך סצנות. העריכה תמיד הייתה הקיר, אז שברתי אותו ובניתי לעצמי סטודיו אוטומטי !").
+4. **ביט 4 (00:29 - 00:38) | מנוע האוטומציה (The Secret Engine):**
+   - החיבור של היכולות לחבילה אחת שעובדת בפקודה בודדת (לדוגמה: "לקחתי את הסקיל, חיברתי לו עוד כמה יכולות, וארזתי הכל לחבילה אחת. היום, כל ריל שאתם רואים ממני יוצא בפקודה אחת !").
+5. **ביט 5 (00:38 - 00:50) | הוכחה והצגת מנגנון (Live Proof & Features):**
+   - הצגת היכולות ברצף מהיר: טלפרומפטר בדפדפן, סלפי אחד, כתוביות מילה במילה, חיתוך שקט אוטומטי, דיבוב משובט ב-ElevenLabs.
+6. **ביט 6 (00:50 - 00:58) | שורת מחץ והנעה חברתית לפעולה (The Social CTA):**
+   - יצירת שיחה בתגובות (לדוגמה: "זה נשמע מקצועי ומחזיר לי שעתיים של שפיות ביום ! רוצים את החבילה המלאה ? כתבו סטודיו בתגובות ואשלח לכם הכל. מקסימום תמשיכו לצלם שישה טייקים על מיוט !").
+
+### 3. דיבוב והקפדה על הגייה נקייה
+- **שיבוט קול:** שימוש בקול המשובט של גיא ב-ElevenLabs (`ND8JTbPy2RGiXF2rpt6p`) במודל `eleven_v3`.
+- **כלל ההחלפה המיידית למילים עמומות:** מילים ש-TTS מתקשה להגות או מדגיש לא נכון (כמו "ערכה" שנשמעת כמו ARAKA או מלעיל) מוחלפות מיד במילה נרדפת חלקה (כמו "חבילה").
+- **איסור על קולות גניחה/נחירה ב-TTS:** לעולם לא מנסים לייצר נחירות או אנחות ("אה אה אה") דרך מנוע הדיבוב. הטקסט נשאר רהוט, והאווירה נבנית באמצעות מוזיקה ואפקטי סאונד.
+- **סנכרון מוחלט ב-Whisper:** חילוץ זמני מילים באמצעות `faster-whisper` (`word_timestamps=True`) ישירות על קובץ האודיו המוגמר.
+
+### 4. כתוביות קינטיות, תגיות פיל ואפקטים ויזואליים
+- פונט **Heebo Black** (`font-weight: 900`, -0.5px letter-spacing), עם קו מתאר שחור עבה וצל עמוק.
+- צפיפות של 2 עד 4 מילים לתיבה.
+- תגיות פיל (Dynamic Highlight Pills) בצבע צהוב זרחני (`#facc15`) או טורקיז חשמלי (`#38bdf8`) עם טקסט שחור, הקופצות בדיוק במילישנייה שבה מילת המפתח נאמרת.
+- תגיות סטטוס עליונות (Scene Chips) להצגת ההקשר של הסצנה (`<span class="chip-tag">STUDIO AI</span>`, `PAIN`, `BREAKTHROUGH`, `GET IT`).
+- אפקטים ויזואליים מתוזמנים: ניצוץ יהלום (`draw_diamond_sparkle`) ברגעי קסם, הבזק אדום כשמוזכר מיקרופון כבוי, ואפקטים קוליים מותאמים (whoosh, sparkle chime, click).
+
+### 5. מאסטרינג אודיו ומוזיקה
+- דיבוב מנורמל ל- `-14 LUFS` (`loudnorm=I=-14:TP=-1.5:LRA=11`).
+- מוזיקת רקע אופטימית/הירואית מונמכת ל- `volume=0.08` עם פילטר `lowpass=f=4500` כדי לשמור על בהירות הדיבור.
+- שילוב אפקטים קוליים מדויקים במילישניות של חיתוכי הסצנות ותגיות ההדגשה.
+
+### 6. מבנה תיקיית פרויקט לסרטון מפוסט
+```
+projects/<post_name>/
+├── post_source/
+│   ├── post_text.txt
+│   └── hero_image.jpg
+├── ai_video/
+│   ├── crop_s1.jpg -> anim_scene1.mp4 (Kling / MiniMax I2V)
+│   ├── crop_s2.jpg -> anim_scene2.mp4
+│   └── ...
+├── tts/
+│   ├── scene1.wav + scene1.json (ElevenLabs timestamps)
+│   └── ...
+├── overlays/
+│   ├── vbadge_scene1.png
+│   └── ...
+└── out/
+    └── <post_name>_reel.mp4
+```
+
+---
+
 ## Project Execution Checklist
 
-1. **Draft Script & Validate Pronunciation:** Verify all words are unambiguous. If a word sounds awkward in test TTS, replace it with a synonym immediately (e.g. "ערכה" -> "חבילה").
-2. **Synthesize TTS:** Run `eleven_v3` with timestamps. Save 48kHz 16-bit stereo WAV.
-3. **Run Word Alignment:** Run `faster-whisper` on generated audio to record exact word start/end bounds.
-4. **Render Overlays:** Generate transparent PNG overlays via headless Chrome.
-5. **Composite Video:** Run ffmpeg graph (anim/footage + overlays + audio mix).
-6. **Quality Control (QC):** Extract test frames at key timestamps. Verify:
-   - Total duration strictly under target limit (< 60.00s for vertical).
-   - No subtitle text clipping or awkward wraps.
-   - Active highlight badge matches spoken word timing.
-   - Audio balance: voice intelligible over BGM.
+1. **פוסט לתסריט ואימות הגייה:**
+   - חילוץ הטקסט והתמונה המקורית מהפוסט.
+   - חלוקה ל-6 ביטים נרטיביים ממוקדים (< 60.00 שניות).
+   - בדיקת מילים עמומות והחלפתן במילים נרדפות חלקות (לדוגמה: "חבילה" במקום "ערכה").
+2. **אנימציית וידאו גנרטיבית (Image-to-Video):**
+   - גזירת קרופים אנכיים (9:16) ברזולוציה גבוהה מתוך התמונה הראשית של הפוסט.
+   - יצירת אנימציית וידאו חיה לכל קרופ במודל I2V (Kling, MiniMax, Runway, Luma) עם פרומפטי תנועה מותאמים.
+   - החלת לופ פינג-פונג לשמירה על תנועה רציפה לאורך כל משך הקריינות של הסצנה.
+3. **הפקת דיבוב וסנכרון Whisper:**
+   - הרצת `eleven_v3` עם הקול של גיא (`ND8JTbPy2RGiXF2rpt6p`). שמירה כ-WAV סטריאו 48kHz.
+   - הרצת `faster-whisper` עם `word_timestamps=True` לחילוץ זמני מילים ברמת מילישניות.
+4. **רינדור שכבות גרפיות:**
+   - יצירת כתוביות Heebo Black ותגיות הדגשה פיל ב-Chrome headless כשכבות PNG שקופות.
+5. **עריכה סופית ב-ffmpeg:**
+   - הרכבת פריימי הווידאו המונפשים + שכבות הכתוביות + דיבוב + מוזיקת רקע מונחתת + אפקטי סאונד.
+6. **בקרת איכות (QC):**
+   - משך כולל נמוך מ-60.00 שניות (אידיאלי: 50 עד 58 שניות).
+   - אין פריימים קפואים או תמונות סטטיות ללא תנועת וידאו חיה.
+   - תגית ההדגשה קופצת בדיוק על המילה המדוברת.
+   - דיבוב ברור ומובן על גבי מוזיקת הרקע (מאסטרינג ב- -14 LUFS).
 
-See `reference/lessons.md` for detailed technical logs and pronunciation test cases.
+ראו `reference/lessons.md` לפירוט לקחים טכניים, מקרי בוחן ומבנה קוד מלא.
