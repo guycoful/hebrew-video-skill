@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>Studio Recorder - Desktop Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1920px;
+      height: 1200px;
+      overflow: hidden;
+      background: #0b0f19;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Hebrew', sans-serif;
+      user-select: none;
+    }
+    
+    #camera-viewport {
+      width: 1920px;
+      height: 1200px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      overflow: hidden;
+    }
+
+    #desktop {
+      width: 1920px;
+      height: 1200px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: url('wallpaper.jpg') no-repeat center center;
+      background-size: cover;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+    
+    /* Subtle Desktop Vignette */
+    #desktop::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+    
+    /* Top Menu Bar */
+    #top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 12px;
+      font-weight: 500;
+      z-index: 10;
+      direction: ltr;
+    }
+    
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .top-right { display: flex; align-items: center; gap: 14px; }
+    
+    /* Chrome Browser Window */
+    #browser-window {
+      position: absolute;
+      left: 70px;
+      top: 44px;
+      width: 1780px;
+      height: 1084px;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.25);
+      display: flex;
+      flex-direction: column;
+      direction: ltr;
+      z-index: 5;
+    }
+    
+    /* Browser Title & Tabs */
+    #window-header {
+      height: 42px;
+      background: #dfe3e8;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 12px;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      border-bottom: 1px solid #c9d0d8;
+    }
+    
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 12px;
+      margin-right: 18px;
+    }
+    
+    .control-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-close { background: #ff5f56; border: 1px solid #e0443e; }
+    .dot-min { background: #ffbd2e; border: 1px solid #dea123; }
+    .dot-max { background: #27c93f; border: 1px solid #1aab29; }
+    
+    .tabs-container {
+      display: flex;
+      align-items: flex-end;
+      height: 100%;
+      flex: 1;
+    }
+    
+    .tab {
+      height: 34px;
+      background: #ffffff;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      color: #202124;
+      font-weight: 500;
+      box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.04);
+      max-width: 360px;
+      direction: rtl;
+    }
+    
+    .tab-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    
+    .tab-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+    }
+    
+    .tab-close {
+      color: #70757a;
+      font-size: 14px;
+      margin-right: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+    }
+    
+    .tab-new {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #5f6368;
+      font-size: 18px;
+      margin-left: 6px;
+      margin-bottom: 3px;
+      border-radius: 50%;
+    }
+    
+    /* Navigation Bar */
+    #nav-bar {
+      height: 44px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .nav-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #5f6368;
+      font-size: 15px;
+      border-radius: 50%;
+    }
+    .nav-btn.disabled { color: #b0b4b9; }
+    
+    .address-bar {
+      flex: 1;
+      height: 32px;
+      background: #f1f3f4;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+      font-size: 13px;
+      color: #3c4043;
+      border: 1px solid transparent;
+      direction: ltr;
+    }
+    
+    .lock-icon {
+      color: #1a73e8;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .address-text {
+      flex: 1;
+      color: #202124;
+      font-family: Consolas, 'SF Mono', Menlo, monospace;
+      font-size: 12.5px;
+    }
+    .address-host { color: #1a73e8; font-weight: 600; }
+    
+    /* Browser Iframe Content */
+    #app-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: #ffffff;
+      direction: rtl;
+    }
+    
+    /* OS Dock at Bottom */
+    #os-dock {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 52px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      z-index: 10;
+    }
+    
+    .dock-app {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .dock-chrome {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+    }
+    .dock-term {
+      background: #1e1e1e;
+      color: #4ade80;
+      font-family: monospace;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .dock-files {
+      background: #38bdf8;
+      color: white;
+    }
+    
+    /* Virtual Mouse Cursor (inside #desktop so it scales with camera) */
+    #virtual-cursor {
+      position: absolute;
+      left: 450px;
+      top: 350px;
+      width: 28px;
+      height: 28px;
+      pointer-events: none;
+      z-index: 9999999;
+      transform: translate(0, 0);
+      filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.45));
+      will-change: left, top;
+    }
+    
+    /* Click Ripple Wave */
+    .click-ripple {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.25);
+      border: 2px solid rgba(37, 99, 235, 0.85);
+      transform: translate(-50%, -50%) scale(0.1);
+      pointer-events: none;
+      z-index: 9999998;
+      animation: rippleEffect 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+    
+    @keyframes rippleEffect {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+    }
+    
+    /* Keystroke HUD */
+    #key-hud {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(17, 24, 39, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, monospace;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 999999;
+      direction: ltr;
+    }
+    #key-hud.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="camera-viewport">
+    <!-- Camera Stage for Dynamic Zoom & Pan -->
+    <div id="desktop">
+      
+      <!-- Top System Menu Bar -->
+      <div id="top-bar">
+        <div class="top-left">
+          <span style="font-weight: 700;">Enterprise OS</span>
+          <span>File</span>
+          <span>View</span>
+          <span>Window</span>
+          <span>Help</span>
+        </div>
+        <div class="top-right">
+          <span>100% &#128267;</span>
+          <span>Wi-Fi</span>
+          <span id="system-time">Sun 10:42 AM</span>
+        </div>
+      </div>
+
+      <!-- Chrome Browser Window -->
+      <div id="browser-window">
+        <!-- Window Title & Tabs -->
+        <div id="window-header">
+          <div class="window-controls">
+            <div class="control-dot dot-close"></div>
+            <div class="control-dot dot-min"></div>
+            <div class="control-dot dot-max"></div>
+          </div>
+          <div class="tabs-container">
+            <div class="tab">
+              <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+              <span class="tab-title">כמה עולה להריץ תהליך AI | מחשבון עלויות ואלור</span>
+              <span class="tab-close">&times;</span>
+            </div>
+            <div class="tab-new">+</div>
+          </div>
+        </div>
+
+        <!-- Navigation & Omnibox -->
+        <div id="nav-bar">
+          <div class="nav-btn disabled">&larr;</div>
+          <div class="nav-btn disabled">&rarr;</div>
+          <div class="nav-btn">&#8635;</div>
+          <div class="address-bar">
+            <span class="lock-icon">&#128274;</span>
+            <div class="address-text">
+              <span class="address-host">http://localhost:3000</span>/ai-provider-cost-calculator.html
+            </div>
+          </div>
+          <div class="nav-btn">&#129513;</div>
+          <div class="nav-btn" style="width: 26px; height: 26px; background: #1a73e8; color: white; font-size: 11px; font-weight: bold; border-radius: 50%;">V</div>
+        </div>
+
+        <!-- Live Web Application Iframe -->
+        <iframe id="app-frame" src="ai-provider-cost-calculator.html"></iframe>
+      </div>
+
+      <!-- OS Dock at bottom -->
+      <div id="os-dock">
+        <div class="dock-app dock-chrome">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="#4285F4"/>
+            <circle cx="12" cy="12" r="5" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="dock-app dock-term">&gt;_</div>
+        <div class="dock-app dock-files">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Virtual Animated Mouse Cursor -->
+      <div id="virtual-cursor">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="cursor-shadow" x="-20%" y="-20%" width="160%" height="160%">
+              <feDropShadow dx="1" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.45"/>
+            </filter>
+          </defs>
+          <g filter="url(#cursor-shadow)">
+            <path d="M3 2L18 16.5L11.5 17.5L15.5 24.5L12.5 26L8.5 19L3 23.5V2Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Keystroke HUD Badge -->
+      <div id="key-hud">^A</div>
+
+    </div>
+  </div>
+
+  <script>
+    // System clock
+    const now = new Date();
+    const timeEl = document.getElementById('system-time');
+    if (timeEl) {
+      timeEl.textContent = 'Sun ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    // Studio Controller API
+    const cursorEl = document.getElementById('virtual-cursor');
+    const desktopEl = document.getElementById('desktop');
+    const hudEl = document.getElementById('key-hud');
+    const iframe = document.getElementById('app-frame');
+
+    let currentCursorX = 500;
+    let currentCursorY = 350;
+    cursorEl.style.left = currentCursorX + 'px';
+    cursorEl.style.top = currentCursorY + 'px';
+
+    // Smooth Cursor Movement
+    window.studioMoveCursor = function(targetX, targetY, durationMs = 800) {
+      return new Promise(resolve => {
+        const startX = currentCursorX;
+        const startY = currentCursorY;
+        const startTime = performance.now();
+
+        function animate(now) {
+          const elapsed = now - startTime;
+          const t = Math.min(elapsed / durationMs, 1);
+          // Ease-out cubic
+          const easeT = 1 - Math.pow(1 - t, 3);
+          
+          currentCursorX = startX + (targetX - startX) * easeT;
+          currentCursorY = startY + (targetY - startY) * easeT;
+
+          cursorEl.style.left = currentCursorX + 'px';
+          cursorEl.style.top = currentCursorY + 'px';
+
+          if (t < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            currentCursorX = targetX;
+            currentCursorY = targetY;
+            cursorEl.style.left = targetX + 'px';
+            cursorEl.style.top = targetY + 'px';
+            resolve();
+          }
+        }
+        requestAnimationFrame(animate);
+      });
+    };
+
+    // Click Ripple
+    window.studioClick = function() {
+      const ripple = document.createElement('div');
+      ripple.className = 'click-ripple';
+      ripple.style.left = (currentCursorX + 2) + 'px';
+      ripple.style.top = (currentCursorY + 2) + 'px';
+      desktopEl.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    };
+
+    // Show Keystroke HUD
+    window.studioShowHud = function(text, durationMs = 1200) {
+      hudEl.textContent = text;
+      hudEl.classList.add('visible');
+      setTimeout(() => {
+        hudEl.classList.remove('visible');
+      }, durationMs);
+    };
+
+    // Camera Pan & Zoom Controller
+    window.studioSetCamera = function(scale, originX, originY, durationMs = 1000) {
+      return new Promise(resolve => {
+        desktopEl.style.transition = `transform ${durationMs}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+        desktopEl.style.transformOrigin = `${originX}px ${originY}px`;
+        desktopEl.style.transform = `scale(${scale})`;
+        setTimeout(resolve, durationMs);
+      });
+    };
+
+    // Reset Camera to 1x
+    window.studioResetCamera = function(durationMs = 1000) {
+      return new Promise(resolve => {
+        desktopEl.style.transition = `transform ${durationMs}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+        desktopEl.style.transform = 'scale(1)';
+        setTimeout(resolve, durationMs);
+      });
+    };
+
+    // Get Iframe element absolute coordinates on main page
+    window.getIframeElementCoords = function(selector) {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        const el = doc.querySelector(selector);
+        if (!el) return null;
+        
+        const frameRect = iframe.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        
+        return {
+          x: frameRect.left + elRect.left + elRect.width / 2,
+          y: frameRect.top + elRect.top + elRect.height / 2,
+          rect: elRect
+        };
+      } catch (e) {
+        console.error('Error finding element:', e);
+        return null;
+      }
+    };
+
+    // Helper easing functions for 60fps deterministic motion
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    const cursorSegments = [
+      { t0: 0.0,  t1: 3.0,  x0: 500,  y0: 350, x1: 500,  y1: 350, ease: 'hold' },
+      { t0: 3.0,  t1: 5.0,  x0: 500,  y0: 350, x1: 700,  y1: 480, ease: 'inOut' },
+      { t0: 5.0,  t1: 6.2,  x0: 700,  y0: 480, x1: 960,  y1: 640, ease: 'out' },
+      { t0: 6.2,  t1: 16.5, x0: 960,  y0: 640, x1: 960,  y1: 640, ease: 'hold' },
+      { t0: 16.5, t1: 18.0, x0: 960,  y0: 640, x1: 1340, y1: 810, ease: 'inOut' },
+      { t0: 18.0, t1: 24.5, x0: 1340, y0: 810, x1: 1340, y1: 810, ease: 'hold' },
+      { t0: 24.5, t1: 26.2, x0: 1340, y0: 810, x1: 1087, y1: 810, ease: 'inOut' },
+      { t0: 26.2, t1: 30.5, x0: 1087, y0: 810, x1: 1087, y1: 810, ease: 'hold' },
+      { t0: 30.5, t1: 34.0, x0: 1087, y0: 810, x1: 960,  y1: 680, ease: 'inOut' },
+      { t0: 34.0, t1: 36.5, x0: 960,  y0: 680, x1: 1150, y1: 720, ease: 'inOut' },
+      { t0: 36.5, t1: 39.5, x0: 1150, y0: 720, x1: 980,  y1: 720, ease: 'inOut' },
+      { t0: 39.5, t1: 41.5, x0: 980,  y0: 720, x1: 1355, y1: 760, ease: 'inOut' },
+      { t0: 41.5, t1: 44.5, x0: 1355, y0: 760, x1: 1050, y1: 620, ease: 'inOut' },
+      { t0: 44.5, t1: 48.0, x0: 1050, y0: 620, x1: 1050, y1: 750, ease: 'inOut' },
+      { t0: 48.0, t1: 51.5, x0: 1050, y0: 750, x1: 750,  y1: 750, ease: 'inOut' },
+      { t0: 51.5, t1: 53.8, x0: 750,  y0: 750, x1: 1385, y1: 451, ease: 'inOut' },
+      { t0: 53.8, t1: 57.0, x0: 1385, y0: 451, x1: 960,  y1: 600, ease: 'inOut' },
+      { t0: 57.0, t1: 60.0, x0: 960,  y0: 600, x1: 960,  y1: 600, ease: 'hold' }
+    ];
+
+    const clickEvents = [
+      { t: 6.2,  x: 960,  y: 640 },
+      { t: 18.0, x: 1340, y: 810 },
+      { t: 26.2, x: 1087, y: 810 },
+      { t: 41.5, x: 1355, y: 760 },
+      { t: 53.8, x: 1385, y: 451 }
+    ];
+
+    const descFullText = 'לקחת שני קובצי Excel, להשוות ביניהם ולהחזיר דוח מסכם';
+    const deptFullText = 'כספים ולוגיסטיקה - ואלור';
+
+    let rippleEl = null;
+
+    // DETERMINISTIC 60 FPS SEEK ENGINE
+    window.studioSeek = function(t) {
+      // 1. Calculate Cursor Position
+      let curX = 500, curY = 350;
+      for (const seg of cursorSegments) {
+        if (t >= seg.t0 && t <= seg.t1) {
+          const dur = seg.t1 - seg.t0;
+          const prog = dur > 0 ? (t - seg.t0) / dur : 1.0;
+          let factor = prog;
+          if (seg.ease === 'inOut') factor = easeInOutCubic(prog);
+          else if (seg.ease === 'out') factor = easeOutCubic(prog);
+          else if (seg.ease === 'hold') factor = 0;
+          curX = lerp(seg.x0, seg.x1, factor);
+          curY = lerp(seg.y0, seg.y1, factor);
+          break;
+        } else if (t > seg.t1) {
+          curX = seg.x1;
+          curY = seg.y1;
+        }
+      }
+
+      // Check click depression
+      let isDepressed = false;
+      for (const c of clickEvents) {
+        if (t >= c.t && t <= c.t + 0.09) {
+          isDepressed = true;
+          break;
+        }
+      }
+      cursorEl.style.left = curX + 'px';
+      cursorEl.style.top = curY + 'px';
+      cursorEl.style.transform = isDepressed ? 'scale(0.92)' : 'scale(1.0)';
+
+      // 2. Click Ripples
+      let activeRipple = null;
+      for (const c of clickEvents) {
+        if (t >= c.t && t <= c.t + 0.6) {
+          activeRipple = { x: c.x, y: c.y, p: (t - c.t) / 0.6 };
+          break;
+        }
+      }
+      if (activeRipple) {
+        if (!rippleEl) {
+          rippleEl = document.createElement('div');
+          rippleEl.className = 'click-ripple';
+          desktopEl.appendChild(rippleEl);
+        }
+        rippleEl.style.display = 'block';
+        rippleEl.style.left = (activeRipple.x + 2) + 'px';
+        rippleEl.style.top = (activeRipple.y + 2) + 'px';
+        const sc = 0.2 + activeRipple.p * 3.3;
+        const op = 1.0 - activeRipple.p;
+        rippleEl.style.transform = `translate(-50%, -50%) scale(${sc})`;
+        rippleEl.style.opacity = op;
+      } else if (rippleEl) {
+        rippleEl.style.display = 'none';
+      }
+
+      // 3. Keystroke HUD
+      if (t >= 26.5 && t <= 28.2) {
+        hudEl.textContent = '^A';
+        let op = 1.0;
+        let transY = 0;
+        if (t < 26.8) {
+          const p = (t - 26.5) / 0.3;
+          op = p;
+          transY = (1 - p) * 20;
+        } else if (t > 27.9) {
+          const p = (28.2 - t) / 0.3;
+          op = p;
+          transY = (1 - p) * 20;
+        }
+        hudEl.style.opacity = op;
+        hudEl.style.transform = `translateX(-50%) translateY(${transY}px)`;
+      } else {
+        hudEl.style.opacity = 0;
+        hudEl.style.transform = 'translateX(-50%) translateY(20px)';
+      }
+
+      // 4. Camera Zoom & Pan (Dynamic Screen Studio Cadence: Focus -> Overview -> Focus -> Overview)
+      let camScale = 1.0;
+      let camOriginX = 960, camOriginY = 600;
+      if (t < 3.0) {
+        camScale = 1.0; camOriginX = 960; camOriginY = 600;
+      } else if (t >= 3.0 && t < 5.5) {
+        const p = easeInOutCubic((t - 3.0) / 2.5);
+        camScale = lerp(1.0, 1.28, p);
+        camOriginX = lerp(960, 960, p);
+        camOriginY = lerp(600, 640, p);
+      } else if (t >= 5.5 && t < 14.5) {
+        camScale = 1.28; camOriginX = 960; camOriginY = 640;
+      } else if (t >= 14.5 && t < 16.5) {
+        const p = easeInOutCubic((t - 14.5) / 2.0);
+        camScale = lerp(1.28, 1.0, p);
+        camOriginX = lerp(960, 960, p);
+        camOriginY = lerp(640, 600, p);
+      } else if (t >= 16.5 && t < 18.2) {
+        const p = easeInOutCubic((t - 16.5) / 1.7);
+        camScale = lerp(1.0, 1.26, p);
+        camOriginX = lerp(960, 1210, p);
+        camOriginY = lerp(600, 810, p);
+      } else if (t >= 18.2 && t < 29.5) {
+        camScale = 1.26; camOriginX = 1210; camOriginY = 810;
+      } else if (t >= 29.5 && t < 32.0) {
+        const p = easeInOutCubic((t - 29.5) / 2.5);
+        camScale = lerp(1.26, 1.0, p);
+        camOriginX = lerp(1210, 960, p);
+        camOriginY = lerp(810, 600, p);
+      } else if (t >= 32.0 && t < 41.5) {
+        camScale = 1.0; camOriginX = 960; camOriginY = 600;
+      } else if (t >= 41.5 && t < 43.5) {
+        const p = easeInOutCubic((t - 41.5) / 2.0);
+        camScale = lerp(1.0, 1.08, p);
+        camOriginX = 960; camOriginY = 600;
+      } else if (t >= 43.5 && t < 51.5) {
+        camScale = 1.08; camOriginX = 960; camOriginY = 600;
+      } else if (t >= 51.5 && t < 53.5) {
+        const p = easeInOutCubic((t - 51.5) / 2.0);
+        camScale = lerp(1.08, 1.0, p);
+        camOriginX = 960; camOriginY = 600;
+      } else {
+        camScale = 1.0; camOriginX = 960; camOriginY = 600;
+      }
+      desktopEl.style.transition = 'none';
+      desktopEl.style.transformOrigin = `${camOriginX}px ${camOriginY}px`;
+      desktopEl.style.transform = `scale(${camScale})`;
+
+      // 5. Iframe Scroll
+      let targetScroll = 0;
+      if (t < 3.0) {
+        targetScroll = 0;
+      } else if (t >= 3.0 && t < 5.0) {
+        targetScroll = lerp(0, 360, easeInOutCubic((t - 3.0) / 2.0));
+      } else if (t >= 5.0 && t < 30.5) {
+        targetScroll = 360;
+      } else if (t >= 30.5 && t < 34.0) {
+        targetScroll = lerp(360, 880, easeInOutCubic((t - 30.5) / 3.5));
+      } else if (t >= 34.0 && t < 41.5) {
+        targetScroll = 880;
+      } else if (t >= 41.5 && t < 42.5) {
+        targetScroll = 0;
+      } else if (t >= 42.5 && t < 47.0) {
+        targetScroll = lerp(0, 600, easeInOutCubic((t - 42.5) / 4.5));
+      } else if (t >= 47.0 && t < 52.0) {
+        targetScroll = 600;
+      } else if (t >= 52.0 && t < 53.8) {
+        targetScroll = lerp(600, 0, easeInOutCubic((t - 52.0) / 1.8));
+      } else {
+        targetScroll = 0;
+      }
+      try {
+        iframe.contentWindow.scrollTo(0, targetScroll);
+      } catch (e) {}
+
+      // 6. Iframe Inputs & Tabs
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (doc) {
+          // Tab Switch: 41.5s -> Details, 53.8s -> Overview
+          if (t >= 41.5 && t < 53.8) {
+            const tabDetails = doc.querySelector('#costs-mode-tab') || doc.querySelector('#goto-details');
+            if (tabDetails && doc.querySelector('#developer-mode-tab')?.getAttribute('aria-selected') === 'true') {
+              tabDetails.click();
+            }
+          } else if (t >= 53.8) {
+            const tabDev = doc.querySelector('#developer-mode-tab');
+            if (tabDev && tabDev.getAttribute('aria-selected') !== 'true') {
+              tabDev.click();
+            }
+          }
+
+          // Process Description Typing
+          const descInput = doc.querySelector('#process-description');
+          if (descInput) {
+            let targetDesc = '';
+            if (t < 6.8) {
+              targetDesc = '';
+            } else if (t >= 6.8 && t < 16.5) {
+              const p = (t - 6.8) / (16.5 - 6.8);
+              const charCount = Math.floor(p * descFullText.length);
+              targetDesc = descFullText.substring(0, charCount);
+            } else {
+              targetDesc = descFullText;
+            }
+            if (descInput.value !== targetDesc) {
+              descInput.value = targetDesc;
+              descInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+
+          // Department Name Typing
+          const deptInput = doc.querySelector('#department-name');
+          if (deptInput) {
+            let targetDept = '';
+            if (t < 18.5) {
+              targetDept = '';
+            } else if (t >= 18.5 && t < 24.5) {
+              const p = (t - 18.5) / (24.5 - 18.5);
+              const charCount = Math.floor(p * deptFullText.length);
+              targetDept = deptFullText.substring(0, charCount);
+            } else {
+              targetDept = deptFullText;
+            }
+            if (deptInput.value !== targetDept) {
+              deptInput.value = targetDept;
+              deptInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+
+          // Monthly Runs
+          const runsInput = doc.querySelector('#runs-month');
+          const overrideCheck = doc.querySelector('#monthly-override');
+          if (runsInput && overrideCheck) {
+            if (t >= 26.5) {
+              if (!overrideCheck.checked) overrideCheck.checked = true;
+              runsInput.removeAttribute('readonly');
+              let targetRuns = '60';
+              if (t >= 26.5 && t < 28.2) {
+                targetRuns = '';
+              } else if (t >= 28.2 && t < 28.6) {
+                targetRuns = '5';
+              } else if (t >= 28.6 && t < 29.0) {
+                targetRuns = '50';
+              } else if (t >= 29.0 && t < 29.4) {
+                targetRuns = '500';
+              } else {
+                targetRuns = '5000';
+              }
+              if (runsInput.value !== targetRuns) {
+                runsInput.value = targetRuns;
+                runsInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    };
+  </script>
+</body>
+</html>
