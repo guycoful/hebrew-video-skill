@@ -42,7 +42,7 @@ Three wipes in one day, each right after a `hyperframes render` failed/was stopp
 - **Do not fight the model with endless phonetic hacks:** Attempting to force stress with hyphens or question marks ("הער-כָּה ?") can introduce unnatural acoustic pauses or plosive bursts.
 - **The Golden Replacement Rule:** If a Hebrew word fails in TTS or creates pronunciation ambiguity, **replace it immediately with an unambiguous synonym**. Changing "רוצים את הערכה המלאה ?" ל-"רוצים את החבילה המלאה ?" פתר את הבעיה בטייק ראשון בצליל טבעי וללא עמימות.
 - **Loanwords and dagesh:** Loanwords like "טלפרומפטר" must be checked to ensure the Pe is pronounced hard (P, not F). If needed, write "טלפרומפטר" with dagesh or phonetically.
-- **Never simulate organic human groans/snores:** Never attempt to generate snore sounds, grunts or sighing noises ("אה אה אה") via TTS. It sounds distorted, uncanny and grotesque. Keep the voice clean, articulate and professional, and let royalty-free fairy-tale background music and crisp UI sound effects (ping, sparkle, whoosh) tell the story.
+- **Organic sounds (v3-era rule, revisit with v4):** with `eleven_v3` never attempt groans/snores via TTS. v4 has explicit reaction tags (`[sighs]`, `[laughs]`, `[coughs]`, `[sneezes]`) and a mode list in `reference/modes.json`, but they are unverified by ear, so audition them before delivery. The original v3 rule: **Never simulate organic human groans/snores:** Never attempt to generate snore sounds, grunts or sighing noises ("אה אה אה") via TTS. It sounds distorted, uncanny and grotesque. Keep the voice clean, articulate and professional, and let royalty-free fairy-tale background music and crisp UI sound effects (ping, sparkle, whoosh) tell the story.
 
 ### 2. Subtitle Synchronization and Dynamic Badge Design
 - **Verbatim accuracy is non-negotiable:** Viewers read and listen simultaneously. Dropping even a single connective word (like "ללכת", "מהחיים", "בינה מלאכותית", "ממני") creates an immediate feeling of desynchronization.
@@ -101,3 +101,8 @@ def get_pingpong_frame(frame_index, total_source_frames):
 - **סצנה 4 (29-38s):** מנוע הפתרון (איחוד יכולות לתוך חבילה אחת, ריל שלם בפקודה אחת).
 - **סצנה 5 (38-50s):** הוכחה והדגמת מנגנון (טלפרומפטר, סלפי, כתוביות אוטומטיות, חיתוך שקט, דיבוב ElevenLabs).
 - **סצנה 6 (50-58s):** קריאה לפעולה חברתית (כתבו "סטודיו" בתגובות ואשלח לכם הכל).
+
+## Eleven v4 (1.10.2026)
+- Guy made `eleven_v4` the standing model. Style and speed sliders and SSML do not exist in v4 (official docs); setting them changed nothing in tests.
+- Speaking modes are tags in square brackets before the words, free-form, combinable with commas. Full catalog: `reference/modes.json`. Usage and rules: SKILL.md, "Voice modes".
+- `/with-timestamps` works on v4; tag characters appear in the returned alignment, which is why `vo.py` strips them before building captions.

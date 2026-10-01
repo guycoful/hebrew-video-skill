@@ -1,0 +1,41 @@
+{
+  "_readme": "מצבי הדיבור של Eleven v4 בעברית, ממופים לתגיות. v4 אין style/speed/SSML: הטון נקבע בתגית בסוגריים מרובעים בתחילת הטקסט. מקור הרשימה: הדגמת v4 שגיא שלח (1.10.2026). הדוגמאות כתובות בעברית ובקול של גיא, וטרם נבדקו שמיעתית.",
+  "modes": {
+    "commanding":      {"tag": "[commanding, authoritative]",        "he": "טון פוקד",            "sample": "חברים, אפשר שקט !"},
+    "warm_calm":       {"tag": "[warm, calm]",                        "he": "חם ורגוע",            "sample": "תודה. אני יכול להסביר לכם מה חדש."},
+    "playful":         {"tag": "[playful]",                           "he": "שובבי",               "sample": "אבל זה יהיה קצת משעמם."},
+    "intimate":        {"tag": "[intimate, close, softly]",           "he": "קרוב ואינטימי",       "sample": "הקול יכול להתקרב עד שהוא מרגיש כמו סוד."},
+    "whisper":         {"tag": "[whispers]",                          "he": "לחישה",               "sample": "סוד שנועד רק לכם."},
+    "dry_sarcastic":   {"tag": "[dry, sarcastic]",                    "he": "יבש ועוקצני",         "sample": "ולפעמים גם למי שמשתעל בשורה השלישית."},
+    "breaking":        {"tag": "[voice breaking]",                    "he": "קול נשבר",            "sample": "הוא יכול לנסות להישאר חזק..."},
+    "crying":          {"tag": "[crying]",                            "he": "בכי",                 "sample": "הבטחתי שאחזור... אבל לא הגעתי."},
+    "recovering":      {"tag": "[taking a breath, recovering]",       "he": "מתאושש",              "sample": "ואז הוא נושם... וממשיך."},
+    "explosive":       {"tag": "[explosive energy, excited]",         "he": "אנרגיה מתפוצצת",      "sample": "או עובר מיד לשדר כדורגל !"},
+    "sports":          {"tag": "[sports commentator, rapid, excited]","he": "שדר ספורט",           "sample": "הוא מתקדם, עובר אחד, עובר שניים, בועט... גוווול !"},
+    "breathless":      {"tag": "[breathless, amused]",                "he": "מתנשף ומשועשע",       "sample": "טוב... נסחפנו קצת."},
+    "menacing":        {"tag": "[ancient, menacing, low]",            "he": "קול עתיק ומאיים",     "sample": "אבל לא כל קול שבוקע מהחושך רוצה שתמצאו אותו."},
+    "non_human":       {"tag": "[non-human, eerie, whispering]",      "he": "לא אנושי",            "sample": "אל תסתובבו."},
+    "scream":          {"tag": "[screams]",                           "he": "צרחה",                "sample": "בו !"},
+    "apologetic":      {"tag": "[playful, apologetic]",               "he": "שובבי ומתנצל",        "sample": "סליחה. הייתי חייב."},
+    "stutter":         {"tag": "[stuttering]",                        "he": "גמגום",               "sample": "אני ר... רוצה לומר משהו."},
+    "stutter_frustrated": {"tag": "[stuttering, frustrated]",         "he": "גמגום מתסכל",         "sample": "אבל ה... המילים פשוט לא יוצאות !"},
+    "amused":          {"tag": "[amused]",                            "he": "רגיל ומשועשע",        "sample": "ואפשר גם להפוך אותו לדמות מצוירת."},
+    "cartoon":         {"tag": "[cartoon character voice]",           "he": "דמות מצוירת",         "sample": "שלום ילדים ! מי רוצה לשמוע בדיחה ממש ממש גרועה ?"},
+    "singing":         {"tag": "[singing]",                           "he": "שירה",                "sample": "קול עולה, קול יורד, כל סיפור מיד רוקד."},
+    "opera":           {"tag": "[operatic singing]",                  "he": "אופרה",               "sample": "ופתאום הכול מואר !"},
+    "behind_door":     {"tag": "[muffled, from behind a door]",       "he": "מאחורי הדלת",         "sample": "סליחה שחר, אתה צריך לסיים."},
+    "reassuring":      {"tag": "[reassuring]",                        "he": "מרגיע",               "sample": "זה בסדר, אני בסוף."},
+    "warm_close":      {"tag": "[warm]",                              "he": "חם",                  "sample": "תודה לכולם."}
+  },
+  "sound_events": {
+    "crowd_murmur":    {"tag": "[crowd murmuring]",         "he": "המולה באולם",       "sample": "חברים, אפשר שקט ?"},
+    "whistle":         {"tag": "[whistle]",                 "he": "שריקה",             "sample": "תקשיבו רגע."},
+    "cough":           {"tag": "[coughs]",                  "he": "שיעול",             "sample": "סליחה."},
+    "crowd_laughs":    {"tag": "[crowd laughing]",          "he": "הקהל צוחק",         "sample": "הייתי חייב להגיד את זה."},
+    "trembling_breath":{"tag": "[trembling breath]",        "he": "נשימה רועדת",       "sample": "אני בסדר."},
+    "crowd_cheer":     {"tag": "[crowd cheering wildly]",   "he": "הקהל משתולל",       "sample": "גוווול !"},
+    "sneeze":          {"tag": "[sneezes]",                 "he": "עיטוש",             "sample": "לבריאות."},
+    "knocks":          {"tag": "[three knocks on a door]",  "he": "שלוש דפיקות בדלת",  "sample": "סליחה, אני בא."},
+    "giggle":          {"tag": "[giggles]",                 "he": "צחקוק",             "sample": "זה בסדר."}
+  }
+}

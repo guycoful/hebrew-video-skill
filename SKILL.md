@@ -1,6 +1,6 @@
 ---
 name: hebrew-video
-description: Produce high-conversion Hebrew marketing, social, and product videos in both 16:9 landscape (desktop demo/client walkthrough) and 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) formats. Transforms social media posts (LinkedIn, Facebook, Instagram) into fully voiced, AI-animated vertical reels with generative Image-to-Video motion, Hebrew voiceover in Guy's cloned voice (ElevenLabs eleven_v3, voice IVC10), centisecond-accurate RTL captions with dynamic word badges, and audio mixing with background music and SFX. Rendered via headless Chrome overlays and ffmpeg. Use for any "סרטון", "וידאו", "רילס", "שורטס", "קריינות", "כתוביות", "דיבוב", "פוסט לסרטון", "סרטון מפוסט", client demo, or automated video studio. Never use HyperFrames on this machine.
+description: Produce high-conversion Hebrew marketing, social, and product videos in both 16:9 landscape (desktop demo/client walkthrough) and 9:16 vertical (Instagram Reels, YouTube Shorts, TikTok) formats. Transforms social media posts (LinkedIn, Facebook, Instagram) into fully voiced, AI-animated vertical reels with generative Image-to-Video motion, Hebrew voiceover in Guy's cloned voice (ElevenLabs eleven_v4, voice IVC10 or GUYCO AI HEB, with per-scene speaking modes), centisecond-accurate RTL captions with dynamic word badges, and audio mixing with background music and SFX. Rendered via headless Chrome overlays and ffmpeg. Use for any "סרטון", "וידאו", "רילס", "שורטס", "קריינות", "כתוביות", "דיבוב", "פוסט לסרטון", "סרטון מפוסט", client demo, or automated video studio. HyperFrames is allowed only with safeguards: render into a fresh dedicated output folder, never interrupt a render, and back up deliverables before re-running (an interrupted render once deleted the output folder).
 ---
 
 # Hebrew Video Production Pipeline (16:9 Landscape & 9:16 Vertical Shorts)
@@ -16,7 +16,7 @@ Everything runs from a **project folder** that holds configuration, `assets/`, `
    - **Immediately substitute ambiguous words with clean, unambiguous synonyms** (e.g. replace "ערכה" with "חבילה").
    - Technical loanwords: ensure explicit hard consonants (e.g. "טלפרומפטר" with dagesh in Pe, not "telefrompter").
    - **Zero vocal groans or snore simulations:** Never attempt to generate snore sounds, sighs or grunts ("אה אה אה") via TTS. They sound distorted and bizarre. Keep narration articulate and pair with subtle background music and clean SFX.
-4. **Voice Engine:** ElevenLabs `eleven_v3` only. Voice **IVC10 = `ND8JTbPy2RGiXF2rpt6p`** ("Guy HE IVC 10min"), settings `stability 0.5, similarity 0.75`, no style/speed.
+4. **Voice Engine:** ElevenLabs **`eleven_v4`** (Guy's decision, 1.10.2026; `eleven_v3` stays as a fallback, `eleven_v4_turbo` for low latency). Voice **IVC10 = `ND8JTbPy2RGiXF2rpt6p`** ("Guy HE IVC 10min"), settings `stability 0.5, similarity 0.75`. v4 has **no style or speed sliders and no SSML**: tone and pace come from `[tags]` in the text (see "Voice modes" below). Which clone sounds best on v4 (IVC10 or `pEC1hVCB2mYHhaaS3B9A`) is Guy's call.
 5. **Verbatim Subtitle Synchronization (Whisper Alignment):**
    - Captions must match the spoken words 100% verbatim. Dropping words (like "ללכת", "מהחיים", "בינה מלאכותית", "ממני") breaks synchronization.
    - Extract timestamps using `faster-whisper` (`word_timestamps=True`) directly on the final mixed/spliced audio.
@@ -181,3 +181,15 @@ projects/<post_name>/
    - דיבוב ברור ומובן על גבי מוזיקת הרקע (מאסטרינג ב- -14 LUFS).
 
 ראו `reference/lessons.md` לפירוט לקחים טכניים, מקרי בוחן ומבנה קוד מלא.
+
+## Voice modes (Eleven v4)
+
+`reference/modes.json` maps 25 speaking modes and 9 sound events to v4 tags, each with a Hebrew sample line. Modes: commanding, warm_calm, playful, intimate, whisper, dry_sarcastic, breaking, crying, recovering, explosive, sports, breathless, menacing, non_human, scream, apologetic, stutter, stutter_frustrated, amused, cartoon, singing, opera, behind_door, reassuring, warm_close. Sound events: crowd_murmur, whistle, cough, crowd_laughs, trembling_breath, crowd_cheer, sneeze, knocks, giggle.
+
+How to use it in `project.json`:
+- `"narration_modes": [null, "whisper", "sports", ...]` a list parallel to `narration`. `null` means the normal voice. `vo.py` puts the mode's tag in front of that line for TTS only.
+- Or write a tag inline: `"[sarcastic] יופי. סוכנים זה מהיום מותרות למי שמשלם."`. Tags can be combined with a comma: `[whispering, fearful]`. They are free-form, and an emotion carries on until the next tag.
+- `vo.py` strips every `[tag]` from the caption timing, so tags never reach the screen. In the clips transcribed back so far the tag was not read aloud in Hebrew (about 10 checked; keep checking with `qa_vo.py` or by ear).
+- `voice.default_mode` sets a mode for every line that has none.
+
+Rules of thumb: pace tags work (same sentence: `[speedy]` 5.1 s, `[snappy]` 5.5, `[calm]` 6.1, `[slowly]` 7.2). `[excited]` with exclamation marks sounded childish on Guy's voice, so keep the default narration plain or `[warm, calm]`. A single request of ~1,100 characters came out complete on v4 (no v3-style cut-off at ~600), but keep scenes short anyway. Sound events (sneeze, knocks, crowd) were generated without errors and **not yet verified by ear**: listen before using them in a delivered video. Never mix many modes in one short video: one or two deliberate switches read as craft, ten read as a demo reel.

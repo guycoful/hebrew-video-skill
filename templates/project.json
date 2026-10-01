@@ -3,13 +3,14 @@
  "output": "out/Valor-ControlCenter-client.mp4",
  "voice": {
   "voice_id": "ND8JTbPy2RGiXF2rpt6p",
-  "model_id": "eleven_v3",
+  "model_id": "eleven_v4",
   "voice_settings": {
    "stability": 0.5,
    "similarity_boost": 0.75
   },
   "env_file": "~/.config/valor-video/.env"
  },
+ "narration_modes": [null, "warm_calm", null],
  "narration": [
   "עשרות תהליכי אוטומציה רצים אצלכם ב-UI Path. כל אחד מהם עובד. אבל מי רואה את כולם ביחד? וָואלוֹר אוטומיישן קונטרול סנטר: שליטה מרכזית, נראות בזמן אמת, ואופטימיזציה של כל מערך האוטומציה.",
   "ככל שהאוטומציה גדלה, המורכבות עולה. אילו תהליכים פעלו, אילו נכשלו, מה זמני הריצה, ומה מתוכנן לרוץ ומתי. היום התשובה מפוזרת בין מסכים ובקבצי Excel. כאן היא במסך אחד: כל התהליכים, הסטטוסים והחריגות, בזמן אמת.",

@@ -138,7 +138,10 @@ def tts_line(i, text):
     if not os.path.exists(mp3):
         env_file = os.path.expanduser(V.get("env_file", "~/.config/valor-video/.env"))
         env = {l.split('=', 1)[0]: l.split('=', 1)[1].strip() for l in open(env_file, encoding="utf-8") if '=' in l and not l.startswith('#')}
-        body = json.dumps({"text": text, "model_id": V.get("model_id", "eleven_v3"), "voice_settings": V.get("voice_settings", {})}).encode()
+        model = V.get("model_id", "eleven_v4"); vs = dict(V.get("voice_settings", {}))
+        if model.startswith("eleven_v4"):          # v4: no style/speed sliders, tone comes from [tags] in the text
+            for k in ("style", "speed", "use_speaker_boost"): vs.pop(k, None)
+        body = json.dumps({"text": text, "model_id": model, "voice_settings": vs}).encode()
         req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{V['voice_id']}?output_format=mp3_44100_192", body,
                                      {"xi-api-key": env["ELEVENLABS_API_KEY"], "Content-Type": "application/json"})
         open(mp3, "wb").write(urllib.request.urlopen(req, timeout=300).read())

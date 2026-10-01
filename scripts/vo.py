@@ -1,19 +1,54 @@
 # -*- coding: utf-8 -*-
 """Hebrew voiceover per scene via ElevenLabs, driven by project.json in the current folder.
 Writes assets/vo/vo<N>.mp3/.wav/.json and vo.json (durations + one-line caption chunks with timing).
-Only segments whose .json is missing are (re)generated: delete assets/vo/vo<N>.* to re-voice one line."""
+Only segments whose .json is missing are (re)generated: delete assets/vo/vo<N>.* to re-voice one line.
+
+Eleven v4 speaking modes: project.json may carry "narration_modes": a list parallel to "narration" with a mode name
+from reference/modes.json (or null). The mode's tag is put in front of the line for TTS only, and every [tag] is
+stripped from the caption timing, so tags never reach the screen. Inline tags written in the narration work the same."""
 import os, sys, json, base64, urllib.request, urllib.error, subprocess
 
 P = json.load(open("project.json", encoding="utf-8"))
 V = P["voice"]
 env_file = os.path.expanduser(V.get("env_file", "~/.config/valor-video/.env"))
-env = {l.split('=', 1)[0]: l.split('=', 1)[1].strip() for l in open(env_file, encoding="utf-8") if '=' in l and not l.startswith('#')}
-KEY = env["ELEVENLABS_API_KEY"]
-VOICE, MODEL, VS = V["voice_id"], V.get("model_id", "eleven_v3"), V.get("voice_settings", {"stability": 0.5, "similarity_boost": 0.75})
+env = {}
+if os.path.exists(env_file):               # tolerate "export KEY=value" and quotes; fall back to the process environment
+    for l in open(env_file, encoding="utf-8"):
+        l = l.strip()
+        if '=' in l and not l.startswith('#'):
+            k, v = l.split('=', 1); env[k.replace("export ", "").strip()] = v.strip().strip("\"'")
+KEY = env.get("ELEVENLABS_API_KEY") or os.environ["ELEVENLABS_API_KEY"]
+VOICE, MODEL, VS = V["voice_id"], V.get("model_id", "eleven_v4"), dict(V.get("voice_settings", {"stability": 0.5, "similarity_boost": 0.75}))
+if MODEL.startswith("eleven_v4"):          # v4 has no style/speed sliders and no SSML: tone and pace come from tags
+    for k in ("style", "speed", "use_speaker_boost"): VS.pop(k, None)
+HERE = os.path.dirname(os.path.abspath(__file__))
+_m = json.load(open(os.path.join(HERE, "..", "reference", "modes.json"), encoding="utf-8"))
+MODES = {**_m["modes"], **_m["sound_events"]}
+MODE_OF = P.get("narration_modes", []) or []
+DEFAULT_MODE = V.get("default_mode")
 NARRATION = P["narration"]
 DISPLAY = [tuple(x) for x in P.get("display", [])]
 MAXC = P.get("caption", {}).get("max_chars", 50)
 REAL_DIR = "assets/vo-real"   # optional: Guy's own recordings vo<N>.wav override TTS
+
+def speak_text(i, text):
+    mode = MODE_OF[i] if i < len(MODE_OF) and MODE_OF[i] else DEFAULT_MODE
+    if mode and mode != "-" and not text.lstrip().startswith("["):
+        if mode not in MODES: raise SystemExit(f"unknown mode '{mode}' (see reference/modes.json)")
+        return MODES[mode]["tag"] + " " + text
+    return text
+
+def strip_tags(al):
+    """Drop every [tag] (and the space after it) from the alignment so captions never show it."""
+    out = {"chars": [], "starts": [], "ends": []}; depth = 0; skip_space = False
+    for c, a, b in zip(al["chars"], al["starts"], al["ends"]):
+        if c == "[": depth += 1; continue
+        if c == "]" and depth: depth -= 1; skip_space = depth == 0; continue
+        if depth: continue
+        if skip_space and c == " ": skip_space = False; continue
+        skip_space = False
+        out["chars"].append(c); out["starts"].append(a); out["ends"].append(b)
+    return out
 
 def display(t):
     for a, b in DISPLAY: t = t.replace(a, b)
@@ -82,9 +117,9 @@ for i, text in enumerate(NARRATION):
             subprocess.check_call(["ffmpeg", "-v", "error", "-y", "-i", real, "-ar", "48000", "-ac", "2", "-af", "highpass=f=70,loudnorm=I=-18:TP=-2", wav])
             proportional(text, wav, meta); m = json.load(open(meta, encoding="utf-8")); m["source"] = "real"; json.dump(m, open(meta, "w", encoding="utf-8"), ensure_ascii=False)
     else:
-        if not os.path.exists(meta): tts(text, mp3, meta)
+        if not os.path.exists(meta): tts(speak_text(i, text), mp3, meta)
         if not os.path.exists(wav): subprocess.check_call(["ffmpeg", "-v", "error", "-y", "-i", mp3, "-ar", "48000", "-ac", "2", wav])
-    al = json.load(open(meta, encoding="utf-8"))
+    al = strip_tags(json.load(open(meta, encoding="utf-8")))
     dur = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", wav]).decode().strip())
     caps = chunks_for(al)
     out.append({"i": i, "file": wav, "duration": round(dur, 2), "captions": caps})
